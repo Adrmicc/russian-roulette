@@ -5,6 +5,8 @@ A sleek, modern single-page web application featuring a Russian Roulette mini-ga
 ![Preview](https://img.shields.io/badge/Status-Production--Ready-success?style=for-the-badge)
 ![Tech Stack](https://img.shields.io/badge/Stack-Flask%20|%20Docker%20|%20Ansible-blue?style=for-the-badge)
 
+![Application Screenshot](image.png)
+
 ## 🛠️ Quick Start (Docker)
 
 Ensure you have [Docker](https://www.docker.com/) and [Docker Compose](https://docs.docker.com/compose/) installed.
