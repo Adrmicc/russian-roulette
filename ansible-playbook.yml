@@ -45,12 +45,6 @@
         state: present
       when: ansible_facts['os_family'] == "RedHat"
 
-    # 1c. Install docker-compose via pip (universal)
-    - name: Install docker-compose via pip
-      ansible.builtin.pip:
-        name: docker-compose
-        state: present
-
     - name: Ensure Docker service is running
       ansible.builtin.systemd:
         name: docker
