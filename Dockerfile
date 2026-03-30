@@ -17,7 +17,7 @@ FROM python:3.12-slim AS runtime
 
 LABEL org.opencontainers.image.title="russian-roulette" \
     org.opencontainers.image.description="Flask Russian Roulette mini-game" \
-    org.opencontainers.image.source="https://github.com/example/russian-roulette" \
+    org.opencontainers.image.source="https://github.com/adrmicc/russian-roulette" \
     org.opencontainers.image.licenses="MIT"
 
 # Create non-root user
