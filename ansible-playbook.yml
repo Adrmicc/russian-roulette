@@ -1,0 +1,93 @@
+
+# Russian Roulette — Ansible
+
+# Usage:
+#   ansible-playbook ansible-playbook.yml
+#   ansible-playbook ansible-playbook.yml -e "app_dir=/opt/russian-roulette"
+
+---
+- name: Deploy Russian Roulette
+  hosts: localhost
+  connection: local
+  become: true
+
+  vars:
+    app_dir: /opt/russian-roulette
+    app_port: 5000
+    compose_version: "2.24.0"
+
+  tasks:
+    # 1. System dependencies
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+    - name: Install required system packages
+      ansible.builtin.apt:
+        name:
+          - docker.io
+          - docker-compose-v2
+          - python3-docker
+          - curl
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Ensure Docker service is running
+      ansible.builtin.systemd:
+        name: docker
+        state: started
+        enabled: true
+
+    # 2. Prepare project directory
+    - name: Create application directory
+      ansible.builtin.file:
+        path: "{{ app_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Copy application files
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: "{{ app_dir }}/{{ item | basename }}"
+        mode: "0644"
+      loop:
+        - app.py
+        - requirements.txt
+        - Dockerfile
+        - docker-compose.yml
+
+    # 3. Build & Start
+    - name: Stop existing containers (if any)
+      ansible.builtin.command:
+        cmd: docker compose down --remove-orphans
+        chdir: "{{ app_dir }}"
+      ignore_errors: true
+      changed_when: true
+
+    - name: Build and start containers
+      ansible.builtin.command:
+        cmd: docker compose up -d --build
+        chdir: "{{ app_dir }}"
+      changed_when: true
+
+    # 4. Health check
+    - name: Wait for application to become healthy
+      ansible.builtin.uri:
+        url: "http://localhost:{{ app_port }}/health"
+        method: GET
+        status_code: 200
+      register: health_result
+      retries: 10
+      delay: 3
+      until: health_result.status == 200
+
+    # 5. Done
+    - name: Display access information
+      ansible.builtin.debug:
+        msg: |
+          ✅ Russian Roulette deployed successfully!
+          🌐 Access: http://localhost:{{ app_port }}
+          📦 Directory: {{ app_dir }}
+          🔧 Manage: cd {{ app_dir }} && docker compose [up|down|logs]
