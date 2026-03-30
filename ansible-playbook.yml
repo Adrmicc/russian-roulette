@@ -17,22 +17,39 @@
     compose_version: "2.24.0"
 
   tasks:
-    # 1. System dependencies
+    # 1. System dependencies (Debian/Kali/Ubuntu)
     - name: Update apt cache
       ansible.builtin.apt:
         update_cache: true
         cache_valid_time: 3600
       when: ansible_facts['os_family'] == "Debian"
 
-    - name: Install required system packages
+    - name: Install packages (Debian/Kali/Ubuntu)
       ansible.builtin.apt:
         name:
           - docker.io
-          - docker-compose-plugin
           - python3-docker
+          - python3-pip
           - curl
         state: present
       when: ansible_facts['os_family'] == "Debian"
+
+    # 1b. System dependencies (RedHat/Fedora/CentOS)
+    - name: Install packages (RedHat/Fedora)
+      ansible.builtin.dnf:
+        name:
+          - docker
+          - python3-docker
+          - python3-pip
+          - curl
+        state: present
+      when: ansible_facts['os_family'] == "RedHat"
+
+    # 1c. Install docker-compose via pip (universal)
+    - name: Install docker-compose via pip
+      ansible.builtin.pip:
+        name: docker-compose
+        state: present
 
     - name: Ensure Docker service is running
       ansible.builtin.systemd:
