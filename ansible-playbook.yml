@@ -22,24 +22,17 @@
       ansible.builtin.apt:
         update_cache: true
         cache_valid_time: 3600
-      when: ansible_facts['os_family'] == "Debian"
+      when: ansible_os_family == "Debian"
 
     - name: Install packages (Debian/Kali/Ubuntu)
       ansible.builtin.apt:
         name:
           - docker.io
+          - docker-compose
+          - python3-docker
           - curl
         state: present
-      when: ansible_facts['os_family'] == "Debian"
-
-    # 1b. System dependencies (RedHat/Fedora/CentOS)
-    - name: Install packages (RedHat/Fedora)
-      ansible.builtin.dnf:
-        name:
-          - docker
-          - curl
-        state: present
-      when: ansible_facts['os_family'] == "RedHat"
+      when: ansible_os_family == "Debian"
 
     - name: Ensure Docker service is running
       ansible.builtin.systemd:
@@ -47,7 +40,7 @@
         state: started
         enabled: true
 
-    # 2. Prepare project directory
+    #  2. Prepare project directory 
     - name: Create application directory
       ansible.builtin.file:
         path: "{{ app_dir }}"
@@ -65,17 +58,17 @@
         - Dockerfile
         - docker-compose.yml
 
-    # 3. Build & Start
+    #  3. Build & Start 
     - name: Stop existing containers (if any)
-      ansible.builtin.command:
-        cmd: docker compose down --remove-orphans
+      ansible.builtin.shell:
+        cmd: docker-compose down --remove-orphans
         chdir: "{{ app_dir }}"
       ignore_errors: true
       changed_when: true
 
     - name: Build and start containers
-      ansible.builtin.command:
-        cmd: docker compose up -d --build
+      ansible.builtin.shell:
+        cmd: docker-compose up -d --build
         chdir: "{{ app_dir }}"
       changed_when: true
 
@@ -97,4 +90,4 @@
           ✅ Russian Roulette deployed successfully!
           🌐 Access: http://localhost:{{ app_port }}
           📦 Directory: {{ app_dir }}
-          🔧 Manage: cd {{ app_dir }} && docker compose [up|down|logs]
+          🔧 Manage: cd {{ app_dir }} && docker-compose [up|down|logs]
